@@ -9,6 +9,10 @@ import { options } from "../components/constant/Constant";
 import { items } from "../components/constant/Constant";
 import AntdDropDown from "../components/dropdown/AntDropDown";
 import AntdDatePicker from "../components/datepicker/AntdDatePicker";
+import AntdTable from "../components/table/AntdTable";
+import { columns } from "../components/constant/Constant";
+import { dataSource } from "../components/constant/Constant";
+import AntdDivider from "../components/divider/AntdDivider";
 
 const SignUp = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,6 +83,46 @@ const SignUp = () => {
         onClick={isVisible}
         title='Click to open drawer'
       />
+      {/* <------------------------- Table Component ------------------------------> */}
+      <AntdTable
+        dataSource={dataSource}
+        columns={columns}
+      />
+      <div className='w-96 mt-4 mx-auto space-y-3'>
+        <div className='border border-black'>
+          <AntdDivider
+            orientation='left'
+            text='Left'
+            type='horizontal'
+          />
+          <p>
+            Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+            Asperiores, iusto.
+          </p>
+        </div>
+        <div className='border border-black'>
+          <AntdDivider
+            orientation='center'
+            text='Center'
+            type='horizontal'
+          />
+          <p>
+            Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+            Asperiores, iusto.
+          </p>
+        </div>
+        <div className='border border-black'>
+          <AntdDivider
+            orientation='right'
+            text='Right'
+            type='vertical'
+          />
+          <p>
+            Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+            Asperiores, iusto.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

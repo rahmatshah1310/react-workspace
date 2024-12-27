@@ -2,21 +2,20 @@
 
 export const options = [
   {
-    value: "jack",
-    label: "Jack",
+    value: "Day",
+    label: "Day",
   },
   {
-    value: "lucy",
-    label: "Lucy",
+    value: "Week",
+    label: "Week",
   },
   {
-    value: "Yiminghe",
-    label: "yiminghe",
+    value: "Month",
+    label: "Month",
   },
   {
-    value: "disabled",
-    label: "Disabled",
-    disabled: true,
+    value: "Year",
+    label: "Year",
   },
 ];
 export const items = [
@@ -93,4 +92,54 @@ export const columns = [
     dataIndex: "address",
     key: "address",
   },
+];
+
+export const optionItems = [
+  { id: 1, label: "Day" },
+  { id: 2, label: "Week" },
+  { id: 3, label: "Month" },
+  { id: 4, label: "Year" },
+];
+
+export const radioOptionsMonth = [
+  { id: 1, label: "On day 24" },
+  { id: 2, label: "On the fourth Tuesday" },
+  { id: 3, label: "On the last Tuesday" },
+];
+export const radioOptionsYear = [
+  { id: 1, label: "On December 24" },
+  { id: 2, label: "On the fourth Tuesday of December" },
+  { id: 3, label: "On the last Tuesday of December" },
+];
+
+export const WeekData = [
+  { label: "M" },
+  { label: "T" },
+  { label: "W" },
+  { label: "T" },
+  { label: "F" },
+  { label: "S" },
+  { label: "S" },
+];
+// export const WeekData = ["M", "T", "W", "Th", "F", "Sa", "Su"];
+export const daySelector = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+export const yearSelector = [
+  "December 24",
+  "the fourth Tuesday of December",
+  "the last Tuesday of December",
+];
+
+export const monthSelector = [
+  "day 24",
+  "the fourth Tuesday",
+  "the last Tuesday",
 ];

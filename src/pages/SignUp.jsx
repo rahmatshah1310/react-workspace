@@ -13,11 +13,20 @@ import AntdTable from "../components/table/AntdTable";
 import { columns } from "../components/constant/Constant";
 import { dataSource } from "../components/constant/Constant";
 import AntdDivider from "../components/divider/AntdDivider";
+import AntdModal from "../components/modal/AntdModal";
 
 const SignUp = () => {
+  const [selectedValue, setSelectedValue] = useState(null); // State to track selected value
   const [isOpen, setIsOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const [placement, setPlacement] = useState("left");
   const [email, setEmail] = useState("");
+
+  // Handle value change
+  const handleChange = (value) => {
+    setSelectedValue(value);
+  };
+
   const onClose = () => {
     setIsOpen(false);
   };
@@ -25,13 +34,16 @@ const SignUp = () => {
   const isVisible = () => {
     setIsOpen(true);
   };
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
+
   const handleChangeDate = (date, dateString) => {
     console.log(date, dateString);
   };
-
+  const showModal = () => {
+    setOpenModal(true);
+  };
+  const closeModal = () => {
+    setOpenModal(false);
+  };
   return (
     <div>
       <form onSubmit={(e) => e.preventDefault()}>
@@ -51,9 +63,10 @@ const SignUp = () => {
           />
           {/* <------------------------- Select Component------------------------------> */}
           <AntdSelectField
-            handleChange={handleChange}
             placeholder='Select a value'
             options={options}
+            handleChange={handleChange}
+            selectedValue={selectedValue}
             className='w-96'
           />
           {/* <------------------------- DropDown Component ------------------------------> */}
@@ -115,7 +128,7 @@ const SignUp = () => {
           <AntdDivider
             orientation='right'
             text='Right'
-            type='vertical'
+            type='horizontal'
           />
           <p>
             Lorem ipsum, dolor sit amet consectetur adipisicing elit.
@@ -123,6 +136,17 @@ const SignUp = () => {
           </p>
         </div>
       </div>
+      <AntdModal
+        title='Repeat'
+        showModal={showModal}
+        closeModal={closeModal}
+        openModal={openModal}
+      />
+      <Button
+        type='primary'
+        onClick={showModal}
+        title='Open Modal'
+      />
     </div>
   );
 };

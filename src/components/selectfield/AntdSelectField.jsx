@@ -1,16 +1,33 @@
 /** @format */
 
 import React from "react";
-import { Select, Space } from "antd";
 
-const AntdSelectField = ({ handleChange, placeholder, options, className }) => (
-  <Space>
-    <Select
-      className={className}
-      options={options}
-      onChange={handleChange}
-      placeholder={placeholder}
-    />
-  </Space>
-);
+const AntdSelectField = ({
+  className,
+  optionItems,
+  onSelectChange,
+  option,
+}) => {
+  const handleChange = (event) => {
+    const selectedLabel = event.target.value;
+    onSelectChange(selectedLabel);
+  };
+
+  return (
+    <div>
+      <select
+        className={className}
+        onChange={handleChange}>
+        {optionItems.map((item, id) => (
+          <option
+            className='cursor-pointer'
+            key={item.id}>
+            {item.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
 export default AntdSelectField;

@@ -95,10 +95,10 @@ export const columns = [
 ];
 
 export const optionItems = [
-  { id: 1, label: "Day" },
-  { id: 2, label: "Week" },
-  { id: 3, label: "Month" },
-  { id: 4, label: "Year" },
+  { id: 1, label: "day" },
+  { id: 2, label: "week" },
+  { id: 3, label: "month" },
+  { id: 4, label: "year" },
 ];
 
 export const radioOptionsMonth = [
@@ -133,9 +133,9 @@ export const daySelector = [
 ];
 
 export const yearSelector = [
-  "December 24",
-  "the fourth Tuesday of December",
-  "the last Tuesday of December",
+  "on December 24",
+  "on the fourth Tuesday of December",
+  "on the last Tuesday of December",
 ];
 
 export const monthSelector = [

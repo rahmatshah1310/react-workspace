@@ -1,6 +1,6 @@
 /** @format */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Modal } from "antd";
 import AntdDatePicker from "../datepicker/AntdDatePicker";
 import AntdSelectField from "../selectfield/AntdSelectField";
@@ -10,6 +10,8 @@ import {
   radioOptionsMonth,
   radioOptionsYear,
   daySelector,
+  monthSelector,
+  yearSelector,
 } from "../constant/Constant";
 
 const AntdModal = ({ openModal, showModal, closeModal, title }) => {
@@ -20,9 +22,44 @@ const AntdModal = ({ openModal, showModal, closeModal, title }) => {
 
   const [selectedLabel, setSelectedLabel] = useState("");
   const [selectedDays, setSelectedDays] = useState([]);
+  const [selectedWeeks, setSelectedWeeks] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState([]);
+  const [selectedYear, setSelectedYear] = useState([]);
   const [endDate, setEndDate] = useState(null);
 
-  // Map label to full day names
+  /*<------------------------------- Save Data To LocalStorage ------------------------------->*/
+  const saveToLocalStorage = () => {
+    const data = {
+      selectedLabel,
+      selectedDays,
+      selectedWeeks,
+      selectedMonth,
+      selectedYear,
+      endDate,
+    };
+    localStorage.setItem("modalData", JSON.stringify(data));
+    alert("Data store to localstorage");
+  };
+
+  useEffect(() => {
+    const saveData = localStorage.getItem("modalData");
+    if (saveData) {
+      const parsedData = JSON.parse(saveData);
+      setSelectedLabel(parsedData.selectedLabel);
+      setSelectedDays(parsedData.selectedDays);
+      setSelectedWeeks(parsedData.selectedWeeks);
+      setSelectedMonth(parsedData.selectedMonth);
+      setSelectedYear(parsedData.selectedYear);
+      setEndDate(parsedData.endDate);
+    }
+  }, []);
+
+  const handleSaveClick = () => {
+    saveToLocalStorage();
+  };
+  /*<------------------------------- Save Data To LocalStorage ------------------------------->*/
+
+  /*<------------------------- Logic For  Days --------------------------> */
   const getFullDayFromLabel = (label) => {
     const index = WeekData.indexOf(label);
     return daySelector[index];
@@ -41,7 +78,68 @@ const AntdModal = ({ openModal, showModal, closeModal, title }) => {
   const getFormattedDaysText = () => {
     return `Occurs every ${selectedDays.join(", ")}`;
   };
+  /*<------------------------- Logic For  Days --------------------------> */
 
+  /*<------------------------- Logic For  Week --------------------------> */
+  const getFullWeek = (label) => {
+    const index = WeekData.indexOf(label);
+    return daySelector[index];
+  };
+
+  const toggleWeek = (dayLabel) => {
+    const fullWeek = getFullWeek(dayLabel);
+
+    setSelectedWeeks((prev) =>
+      prev.includes(fullWeek)
+        ? prev.filter((day) => day !== fullWeek)
+        : [...prev, fullWeek]
+    );
+  };
+
+  const getFormattedWeek = () => {
+    return `Occurs every ${selectedWeeks.join(", ")}`;
+  };
+  /*<------------------------- Logic For  Week --------------------------> */
+
+  /*<------------------------- Logic For  Month --------------------------> */
+  const getFullMonth = (label) => {
+    const index = radioOptionsMonth.indexOf(label);
+    return monthSelector[index];
+  };
+
+  const toggleMonth = (monthLabel) => {
+    const fullMonth = getFullMonth(monthLabel);
+
+    setSelectedMonth(
+      (prev) => prev.filter((month) => month === fullMonth) && [fullMonth]
+    );
+  };
+
+  const getFormattedMonth = () => {
+    return `Occurs every ${selectedMonth.join()} until`;
+  };
+  /*<------------------------- Logic For  Month --------------------------> */
+
+  /*<------------------------- Logic For  Year --------------------------> */
+  const getFullYear = (label) => {
+    const index = radioOptionsYear.indexOf(label);
+    return yearSelector[index];
+  };
+
+  const toggleYear = (yearLabel) => {
+    const fullYear = getFullYear(yearLabel);
+
+    setSelectedYear(
+      (prev) => prev.filter((year) => year === fullYear) && [fullYear]
+    );
+  };
+
+  const getFormattedYear = () => {
+    return `Occurs every year ${selectedYear.join()}`;
+  };
+  /*<------------------------- Logic For  Year --------------------------> */
+
+  /*<------------------------- Logic For  Select --------------------------> */
   const handleSelectChange = (label) => {
     setSelectedLabel(label);
   };
@@ -59,7 +157,11 @@ const AntdModal = ({ openModal, showModal, closeModal, title }) => {
       title={title}
       footer={
         <div className='flex justify-center items-end mb-auto space-x-2'>
-          <Button type='primary'>Save</Button>
+          <Button
+            type='primary'
+            onClick={handleSaveClick}>
+            Save
+          </Button>
           <Button onClick={closeModal}>Discard</Button>
           <Button>Remove</Button>
         </div>
@@ -89,50 +191,124 @@ const AntdModal = ({ openModal, showModal, closeModal, title }) => {
       {/*<------------------- Dynamic Content Based on Selected Label -----------------------> */}
       {selectedLabel && (
         <div className='mt-4'>
-          {selectedLabel === "Day" && (
-            <div className='w-80 flex gap-3 mx-auto '>
-              {WeekData.map((item, index) => (
-                <button
-                  key={index}
-                  type='button'
-                  onClick={() => toggleDay(item)}
-                  className={`w-8 h-8 border rounded ${
-                    selectedDays.includes(getFullDayFromLabel(item))
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100"
-                  }`}>
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-          {selectedLabel === "Month" && (
-            <div className='w-80 mx-auto flex flex-col gap-3 justify-center '>
-              {radioOptionsMonth.map((item, index) => (
-                <div
-                  key={index}
-                  className='flex gap-1 items-center'>
-                  <input
-                    type='radio'
-                    name='month'
-                    value={item.label}
-                  />
-                  {item.label}
+          {/*<--------------------- Section For Days --------------------------> */}
+          <section>
+            {selectedLabel === "day" && (
+              <div className='w-80 mx-auto'>
+                <div className='flex gap-3'>
+                  {WeekData.map((item, index) => (
+                    <button
+                      key={index}
+                      type='button'
+                      onClick={() => toggleDay(item)}
+                      className={`w-8 h-8 border ${
+                        selectedDays.includes(getFullDayFromLabel(item))
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100"
+                      }`}>
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+                <div className='w-80 mx-auto mt-2 text-gray-700'>
+                  <p>{getFormattedDaysText()}</p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/*<--------------------- Section For Weeks --------------------------> */}
+          <section>
+            {selectedLabel === "week" && (
+              <div className='w-80 mx-auto'>
+                <div className='flex gap-3'>
+                  {WeekData.map((item, index) => (
+                    <button
+                      key={index}
+                      type='button'
+                      onClick={() => toggleWeek(item)}
+                      className={`w-8 h-8 border ${
+                        selectedWeeks.includes(getFullWeek(item))
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100"
+                      }`}>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <div className='w-80 mx-auto mt-2 text-gray-700'>
+                  <p>{getFormattedWeek()}</p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/*<--------------------- Section For Months --------------------------> */}
+          <section>
+            {selectedLabel === "month" && (
+              <div className='w-80 mx-auto flex flex-col gap-3 justify-center '>
+                {radioOptionsMonth.map((item, index) => (
+                  <div
+                    key={index}
+                    className='flex gap-1 items-center'>
+                    <input
+                      onClick={() => toggleMonth(item)}
+                      className='w-5 h-5'
+                      id={index}
+                      type='radio'
+                      name='month'
+                      value={item.label}
+                    />
+                    <label
+                      htmlFor={index}
+                      className='cursor-pointer'>
+                      {item.label}
+                    </label>
+                  </div>
+                ))}
+                <div className='w-80 mx-auto mt-2 text-gray-700'>
+                  <p>{getFormattedMonth()}</p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/*<--------------------- Section For Year --------------------------> */}
+          <section>
+            {selectedLabel === "year" && (
+              <div className='w-80 mx-auto flex flex-col gap-3 justify-center '>
+                {radioOptionsYear.map((item, index) => (
+                  <div
+                    key={index}
+                    className='flex gap-1 items-center'>
+                    <input
+                      onClick={() => toggleYear(item)}
+                      id={index}
+                      className='w-5 h-5'
+                      type='radio'
+                      name='month'
+                      value={item.label}
+                    />
+                    <label
+                      htmlFor={index}
+                      className='cursor-pointer'>
+                      {item.label}
+                    </label>
+                  </div>
+                ))}
+                <div className='w-80 mx-auto mt-2 text-gray-700'>
+                  <p>{getFormattedYear()}</p>
+                </div>
+              </div>
+            )}
+          </section>
         </div>
       )}
-
-      <div className='w-80 mx-auto mt-2 text-gray-700'>
-        <p>{getFormattedDaysText()}</p>
-      </div>
 
       {/*<--------------------- End Date Picker and Button --------------------------> */}
       <div className='flex justify-center my-3 gap-8'>
         <AntdDatePicker
-          className='border-0'
+          className='border-0 '
           picker='Select end date'
           onChange={handleDateChange} // Call on date change
         />

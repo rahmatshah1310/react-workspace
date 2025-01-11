@@ -1,22 +1,21 @@
 /** @format */
 
 import React, { useState } from "react";
-import { SelectIcon, ThreeDots } from "../../assets/icons/Icons";
+import { FilterIcon, ThreeDots } from "../../assets/icons/Icons";
 import { columns as initialColumns, data } from "../constant/Constant";
+import FilterModal from "../modal/FilterModal";
 
 const PaginatedTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [editRowId, setEditRowId] = useState(null);
-  const [editValue, setEditValue] = useState("");
-  const [columns, setColumns] = useState(initialColumns);
+  const [columns, setColumns] = useState([...new Set(initialColumns)]);
   const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
+  const [filterSearch, setFilterSearch] = useState("");
+  const [editingRegNo, setEditingRegNo] = useState(null);
+  const [editedRegNoValue, setEditedRegNoValue] = useState("");
   const rowsPerPage = 10;
-  const [draggedColumnIndex, setDraggedColumnIndex] = useState(null);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
-
   const currentRows = data.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
@@ -42,60 +41,61 @@ const PaginatedTable = () => {
     }
   };
 
-  const handleEditCellChange = (id, column, value) => {
-    const rowIndex = data.findIndex((row) => row.id === id);
-    if (rowIndex !== -1) {
-      data[rowIndex][column] = value;
-    }
-  };
-
-  const handleOptionsClick = (row) => {
-    setModalContent(row);
+  const handleFilterClick = () => {
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
-    setModalContent(null);
+    setFilterSearch("");
   };
 
-  const handleDragStart = (index) => {
-    setDraggedColumnIndex(index);
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  const handleDrop = (index) => {
-    if (draggedColumnIndex === null || draggedColumnIndex === index) return;
-
-    const reorderedColumns = [...columns];
-    const [removed] = reorderedColumns.splice(draggedColumnIndex, 1);
-    reorderedColumns.splice(index, 0, removed);
-    setColumns(reorderedColumns);
-
-    setDraggedColumnIndex(null);
-  };
-
-  // Define which column names should have the SelectIcon
-  const columnsWithIcons = ["Full Name", "Rank", "District", "Address"];
-
-  const renderColumnIcon = (colName) => {
-    if (columnsWithIcons.includes(colName)) {
-      return <SelectIcon className='w-6 h-6 ml-2' />;
+  const handleColumnToggle = (columnName, checked) => {
+    if (checked) {
+      setColumns((prev) => [...prev, columnName]);
+    } else {
+      setColumns((prev) => prev.filter((col) => col !== columnName));
     }
-    return null;
+  };
+
+  const handleEditRegNo = (id, currentValue) => {
+    setEditingRegNo(id);
+    setEditedRegNoValue(currentValue);
+  };
+
+  const handleSaveRegNo = () => {
+    const updatedRows = currentRows.map((row) =>
+      row.id === editingRegNo ? { ...row, regNo: editedRegNoValue } : row
+    );
+    setEditingRegNo(null);
+    setEditedRegNoValue("");
+    console.log(updatedRows);
+  };
+
+  // Drag and Drop Logic
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.setData("draggedIndex", index);
+  };
+
+  const handleDrop = (e, index) => {
+    const draggedIndex = e.dataTransfer.getData("draggedIndex");
+    const updatedColumns = [...columns];
+    const draggedColumn = updatedColumns.splice(draggedIndex, 1)[0];
+    updatedColumns.splice(index, 0, draggedColumn);
+    setColumns(updatedColumns);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
   return (
     <div className='p-4'>
-      <div className='h-[500px] overflow-y-auto'>
+      <div className='h-[400px] overflow-y-auto'>
         <div className='relative overflow-x-auto shadow-md sm:rounded-lg'>
           <table className='w-full border-collapse border rounded-lg border-gray-300 table-fixed'>
             <thead>
               <tr className='bg-blue-700'>
-                {/* Checkbox Column */}
                 <th className='border border-gray-300 px-4 py-2 text-left w-[50px]'>
                   <input
                     type='checkbox'
@@ -105,21 +105,31 @@ const PaginatedTable = () => {
                     )}
                   />
                 </th>
-                {/* Options Column */}
-                <th className='border border-gray-300 px-4 py-2 text-left w-[80px]'>
-                  Options
+                <th className='border border-gray-300 px-4 py-2 text-left w-[80px] '>
+                  <button onClick={handleFilterClick}>
+                    <FilterIcon />
+                  </button>
+                  <FilterModal
+                    showModal={showModal}
+                    filterSearch={filterSearch}
+                    setFilterSearch={setFilterSearch}
+                    columns={columns}
+                    initialColumns={initialColumns}
+                    handleColumnToggle={handleColumnToggle}
+                    closeModal={closeModal}
+                  />
                 </th>
-                {/* Other Columns */}
                 {columns.map((col, index) => (
                   <th
                     key={index}
+                    className='border border-gray-300 px-4 py-2 text-white text-left w-[150px]'
                     draggable
-                    onDragStart={() => handleDragStart(index)}
+                    onDragStart={(e) => handleDragStart(e, index)}
                     onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(index)}
-                    className='border border-gray-300 px-4 py-2 text-white text-left cursor-grab w-[150px] flex items-center justify-start'>
-                    <span>{col}</span>
-                    {renderColumnIcon(col)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    style={{ cursor: "move" }} // Added cursor style for drag-and-drop
+                  >
+                    {col}
                   </th>
                 ))}
               </tr>
@@ -129,8 +139,7 @@ const PaginatedTable = () => {
                 <tr
                   key={row.id}
                   className='hover:bg-gray-100'>
-                  {/* Checkbox Column */}
-                  <td className='border border-gray-300 px-4 py-2 w-[50px]'>
+                  <td className='border border-gray-300 px-4 py-2 w-[150px]'>
                     <input
                       type='checkbox'
                       checked={selectedRows.includes(row.id)}
@@ -139,35 +148,44 @@ const PaginatedTable = () => {
                       }
                     />
                   </td>
-                  {/* Options Column */}
-                  <td className='border border-gray-300 px-4 py-2 w-[80px]'>
-                    <button onClick={() => handleOptionsClick(row)}>
-                      <ThreeDots className='w-4 h-4' />
+                  <td className='border border-gray-300 px-4 py-2 w-[150px]'>
+                    <button>
+                      <ThreeDots className='w-4 h-4 text-black' />
                     </button>
                   </td>
-                  {/* Other Columns */}
                   {columns.map((col, colIndex) => (
                     <td
                       key={colIndex}
-                      className={`border border-gray-300 px-4 py-2 w-[150px] ${
-                        col === "Address" ? "truncate" : ""
+                      className={`border border-gray-300 px-4 py-2 w-[70px] ${
+                        col === "address" ? "truncate" : ""
                       }`}>
-                      {col === "Reg No" ? (
-                        <input
-                          type='text'
-                          value={row[col] || ""}
-                          onChange={(e) =>
-                            handleEditCellChange(row.id, col, e.target.value)
-                          }
-                          className='p-1 w-full outline-none hover:outline-none'
-                        />
-                      ) : col === "Address" ? (
-                        <div
-                          className='overflow-hidden whitespace-nowrap text-ellipsis'
-                          style={{ maxWidth: "200px" }}
-                          title={row[col]}>
-                          {row[col]}
-                        </div>
+                      {col === "regNo" ? (
+                        editingRegNo === row.id ? (
+                          <div className='flex items-center space-x-2'>
+                            <input
+                              type='text'
+                              value={editedRegNoValue}
+                              onChange={(e) =>
+                                setEditedRegNoValue(e.target.value)
+                              }
+                              className='border border-gray-300 px-2 py-1 rounded'
+                            />
+                            <button
+                              onClick={handleSaveRegNo}
+                              className='bg-blue-500 text-white px-2 py-1 rounded'>
+                              Save
+                            </button>
+                          </div>
+                        ) : (
+                          <div className='flex items-center space-x-2'>
+                            <span>{row.regNo}</span>
+                            <button
+                              onClick={() => handleEditRegNo(row.id, row.regNo)}
+                              className='text-blue-500'>
+                              Edit
+                            </button>
+                          </div>
+                        )
                       ) : (
                         row[col] || ""
                       )}
@@ -179,7 +197,6 @@ const PaginatedTable = () => {
           </table>
         </div>
       </div>
-      {/* Pagination */}
       <div className='mt-4 flex justify-end space-x-2'>
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -206,20 +223,6 @@ const PaginatedTable = () => {
           Next
         </button>
       </div>
-      {/* Modal */}
-      {showModal && (
-        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-          <div className='bg-white p-6 rounded shadow-lg'>
-            <h2 className='text-lg font-semibold mb-4'>Row Options</h2>
-            <pre>{JSON.stringify(modalContent, null, 2)}</pre>
-            <button
-              onClick={closeModal}
-              className='mt-4 px-4 py-2 bg-red-500 text-white rounded'>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

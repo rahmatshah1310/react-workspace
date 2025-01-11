@@ -1,9 +1,10 @@
 /** @format */
 
 import React, { useState } from "react";
-import { FilterIcon, ThreeDots } from "../../assets/icons/Icons";
+import { FilterIcon, ThreeDots, SortedSvg } from "../../assets/icons/Icons";
 import { columns as initialColumns, data } from "../constant/Constant";
 import FilterModal from "../modal/FilterModal";
+import SortedModal from "../modal/SortedModal";
 
 const PaginatedTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,12 +12,14 @@ const PaginatedTable = () => {
   const [columns, setColumns] = useState([...new Set(initialColumns)]);
   const [showModal, setShowModal] = useState(false);
   const [filterSearch, setFilterSearch] = useState("");
-  const [editingRegNo, setEditingRegNo] = useState(null);
-  const [editedRegNoValue, setEditedRegNoValue] = useState("");
+  const [sortedColumn, setSortedColumn] = useState(null); // Track the sorted column
+  const [sortedData, setSortedData] = useState(data); // Store the sorted data
+  const [modalData, setModalData] = useState([]); // Data to display in modal
+  const [sortOrder, setSortOrder] = useState("asc"); // Track sorting order (asc/desc)
   const rowsPerPage = 10;
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
-  const currentRows = data.slice(
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+  const currentRows = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -58,18 +61,29 @@ const PaginatedTable = () => {
     }
   };
 
-  const handleEditRegNo = (id, currentValue) => {
-    setEditingRegNo(id);
-    setEditedRegNoValue(currentValue);
+  // Function to handle sorting by column
+  const handleSort = (columnName) => {
+    const sortedArray = [...data]
+      .filter((item) => item[columnName]) // Ensure the column has values
+      .sort((a, b) => {
+        const valA = a[columnName]?.toLowerCase() || "";
+        const valB = b[columnName]?.toLowerCase() || "";
+        return sortOrder === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      });
+
+    setSortedData(sortedArray);
+    setSortedColumn(columnName);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc"); // Toggle sort order
+    setShowModal(false); // Close modal after sorting
   };
 
-  const handleSaveRegNo = () => {
-    const updatedRows = currentRows.map((row) =>
-      row.id === editingRegNo ? { ...row, regNo: editedRegNoValue } : row
-    );
-    setEditingRegNo(null);
-    setEditedRegNoValue("");
-    console.log(updatedRows);
+  // Function to open the modal with unique column values
+  const openSortModal = (columnName) => {
+    const uniqueValues = [...new Set(data.map((item) => item[columnName]))];
+    setModalData(uniqueValues);
+    setShowModal(true);
   };
 
   // Drag and Drop Logic
@@ -83,6 +97,14 @@ const PaginatedTable = () => {
     const draggedColumn = updatedColumns.splice(draggedIndex, 1)[0];
     updatedColumns.splice(index, 0, draggedColumn);
     setColumns(updatedColumns);
+  };
+
+  const handleInputChange = (rowId, column, value) => {
+    setSortedData((prevData) =>
+      prevData.map((row) =>
+        row.id === rowId ? { ...row, [column]: value } : row
+      )
+    );
   };
 
   const handleDragOver = (e) => {
@@ -107,7 +129,7 @@ const PaginatedTable = () => {
                 </th>
                 <th className='border border-gray-300 px-4 py-2 text-left w-[80px] '>
                   <button onClick={handleFilterClick}>
-                    <FilterIcon />
+                    <FilterIcon className='w-6 h-6 text-white' />
                   </button>
                   <FilterModal
                     showModal={showModal}
@@ -115,7 +137,7 @@ const PaginatedTable = () => {
                     setFilterSearch={setFilterSearch}
                     columns={columns}
                     initialColumns={initialColumns}
-                    handleColumnToggle={handleColumnToggle}
+                    handleColumnToggle={handleColumnToggle} // Add this line
                     closeModal={closeModal}
                   />
                 </th>
@@ -127,9 +149,15 @@ const PaginatedTable = () => {
                     onDragStart={(e) => handleDragStart(e, index)}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, index)}
-                    style={{ cursor: "move" }} // Added cursor style for drag-and-drop
-                  >
+                    style={{ cursor: "move" }}>
                     {col}
+                    {(col === "Station" || col === "Division") && (
+                      <button
+                        onClick={() => openSortModal(col)}
+                        className='ml-8'>
+                        <SortedSvg className='w-4 h-4' />
+                      </button>
+                    )}
                   </th>
                 ))}
               </tr>
@@ -156,36 +184,23 @@ const PaginatedTable = () => {
                   {columns.map((col, colIndex) => (
                     <td
                       key={colIndex}
-                      className={`border border-gray-300 px-4 py-2 w-[70px] ${
-                        col === "address" ? "truncate" : ""
+                      className={`border border-gray-300 px-4 py-2 w-[150px] ${
+                        col === "Address"
+                          ? "truncate overflow-hidden whitespace-nowrap text-ellipsis"
+                          : ""
                       }`}>
-                      {col === "regNo" ? (
-                        editingRegNo === row.id ? (
-                          <div className='flex items-center space-x-2'>
-                            <input
-                              type='text'
-                              value={editedRegNoValue}
-                              onChange={(e) =>
-                                setEditedRegNoValue(e.target.value)
-                              }
-                              className='border border-gray-300 px-2 py-1 rounded'
-                            />
-                            <button
-                              onClick={handleSaveRegNo}
-                              className='bg-blue-500 text-white px-2 py-1 rounded'>
-                              Save
-                            </button>
-                          </div>
-                        ) : (
-                          <div className='flex items-center space-x-2'>
-                            <span>{row.regNo}</span>
-                            <button
-                              onClick={() => handleEditRegNo(row.id, row.regNo)}
-                              className='text-blue-500'>
-                              Edit
-                            </button>
-                          </div>
-                        )
+                      {col === "Reg No" ? (
+                        <span>
+                          <input
+                            type='text'
+                            className='bg-transparent w-24 outlnie-none focus:outline-none'
+                            value={row[col] || ""}
+                            onChange={(e) =>
+                              handleInputChange(row.id, col, e.target.value)
+                            }
+                          />
+                          {row.regNo}
+                        </span>
                       ) : (
                         row[col] || ""
                       )}
@@ -223,6 +238,14 @@ const PaginatedTable = () => {
           Next
         </button>
       </div>
+
+      {/* <SortedModal
+        showModal={showModal}
+        sortedColumn={sortedColumn}
+        modalData={modalData}
+        handleSort={handleSort}
+        closeModal={closeModal}
+      /> */}
     </div>
   );
 };

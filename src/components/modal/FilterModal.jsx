@@ -16,12 +16,18 @@ const FilterModal = ({
     setFilterSearch(e.target.value);
   };
 
+  const handleModalClick = (e) => {
+    e.stopPropagation();
+  };
+
   return (
     showModal && (
       <div
-        className='modal-overlay fixed inset-0 bg-black bg-opacity-50 '
+        className='modal-overlay fixed inset-0 '
         onClick={closeModal}>
-        <div className='bg-white p-2 rounded shadow-lg w-56 max-h-[200px] overflow-y-auto mt-16 ml-16'>
+        <div
+          className='bg-white p-2 rounded shadow-lg w-56 max-h-[200px] overflow-y-auto mt-16 ml-16'
+          onClick={handleModalClick}>
           <div className='relative'>
             <input
               type='text'

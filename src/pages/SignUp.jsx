@@ -4,16 +4,16 @@ import React, { useState } from "react";
 import AntdDrawer from "../components/drawer/AntdDrawer";
 import Button from "../components/button/Button";
 import InputField from "../components/inputfield/InputField";
-import AntdSelectField from "../components/selectfield/AntdSelectField";
+// import AntdSelectField from "../components/selectfield/AntdSelectField";
 import { options } from "../components/constant/Constant";
 import { items } from "../components/constant/Constant";
 import AntdDropDown from "../components/dropdown/AntDropDown";
 import AntdDatePicker from "../components/datepicker/AntdDatePicker";
-import AntdTable from "../components/table/AntdTable";
 import { columns } from "../components/constant/Constant";
 import { dataSource } from "../components/constant/Constant";
 import AntdDivider from "../components/divider/AntdDivider";
 import AntdModal from "../components/modal/AntdModal";
+import PaginatedTable from "../components/table/PaginatedTable";
 
 const SignUp = () => {
   const [selectedValue, setSelectedValue] = useState(null); // State to track selected value
@@ -45,7 +45,7 @@ const SignUp = () => {
     setOpenModal(false);
   };
   return (
-    <div>
+    <>
       <form onSubmit={(e) => e.preventDefault()}>
         {/* <------------------------- Drawer Component ------------------------------> */}
         <AntdDrawer
@@ -62,13 +62,13 @@ const SignUp = () => {
             value='email'
           />
           {/* <------------------------- Select Component------------------------------> */}
-          <AntdSelectField
+          {/* <AntdSelectField
             placeholder='Select a value'
             options={options}
             handleChange={handleChange}
             selectedValue={selectedValue}
             className='w-96'
-          />
+          /> */}
           {/* <------------------------- DropDown Component ------------------------------> */}
           <AntdDropDown
             items={items}
@@ -92,16 +92,12 @@ const SignUp = () => {
         </AntdDrawer>
       </form>
       {/* <------------------------- Open Drawer ------------------------------> */}
-      <Button
+      {/* <Button
         onClick={isVisible}
         title='Click to open drawer'
-      />
+      /> */}
       {/* <------------------------- Table Component ------------------------------> */}
-      <AntdTable
-        dataSource={dataSource}
-        columns={columns}
-      />
-      <div className='w-96 mt-4 mx-auto space-y-3'>
+      {/* <div className='w-96 mt-4 mx-auto space-y-3'>
         <div className='border border-black'>
           <AntdDivider
             orientation='left'
@@ -135,19 +131,20 @@ const SignUp = () => {
             Asperiores, iusto.
           </p>
         </div>
-      </div>
-      <AntdModal
+      </div> */}
+      {/* <AntdModal
         title='Repeat'
         showModal={showModal}
         closeModal={closeModal}
         openModal={openModal}
-      />
-      <Button
+      /> */}
+      {/* <Button
         type='primary'
         onClick={showModal}
         title='Open Modal'
-      />
-    </div>
+      /> */}
+      <PaginatedTable />
+    </>
   );
 };
 

@@ -28,7 +28,7 @@ export const ThreeDots = ({ className }) => {
 export const FilterIcon = ({ className }) => {
   return (
     <svg
-      class={className}
+      className={className}
       viewBox='0 0 1024 1024'
       version='1.1'
       xmlns='http://www.w3.org/2000/svg'>
@@ -60,13 +60,28 @@ export const SortedSvg = ({ className }) => {
     <svg
       className={className}
       xmlns='http://www.w3.org/2000/svg'
-      shape-rendering='geometricPrecision'
-      text-rendering='geometricPrecision'
-      image-rendering='optimizeQuality'
+      shapeRendering='geometricPrecision'
+      textRendering='geometricPrecision'
+      imageRendering='optimizeQuality'
       fill='white'
-      clip-rule='evenodd'
+      clipRule='evenodd'
       viewBox='0 0 512 410.73'>
       <path d='M335.62 410.73H164.96V239.89L13.31 59.96C7.33 52.52 3.19 44.79 1.29 37.65c-1.79-6.72-1.76-13.28.34-19.1 2.3-6.44 6.92-11.63 13.91-14.9C20.35 1.41 26.3.13 33.4.1L472.7.04c7.93-.29 14.95.96 20.74 3.44 7.02 2.97 12.28 7.87 15.44 14.17 3.05 6.1 3.93 13.27 2.34 21.06-1.5 7.24-5.17 15.11-11.32 23.16l-151.94 178.1v170.76h-12.34zm95.61-347.71-69.16 81.05-18.67-16.01 69.16-81.05 18.67 16.01zm-84.8 99.39-24.45 28.66-18.68-16.01 24.45-28.66 18.68 16.01z' />
+    </svg>
+  );
+};
+
+export const PaperClip = ({ className }) => {
+  return (
+    <svg
+      viewBox='0 0 16 16'
+      className={className}
+      fill='currentColor'
+      xmlns='http://www.w3.org/2000/svg'>
+      <path
+        fillRule='evenodd'
+        d='M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z'
+      />
     </svg>
   );
 };

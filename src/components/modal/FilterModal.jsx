@@ -5,13 +5,13 @@ import { SearchIcon } from "../../assets/icons/Icons";
 
 const FilterModal = ({
   showModal,
-  filterSearch,
-  setFilterSearch,
+  closeModal,
   columns,
   initialColumns,
   handleColumnToggle,
-  closeModal,
 }) => {
+  const [filterSearch, setFilterSearch] = useState("");
+
   const handleSearchChange = (e) => {
     setFilterSearch(e.target.value);
   };
@@ -48,7 +48,7 @@ const FilterModal = ({
                   className='flex justify-start items-center p-2'>
                   <input
                     type='checkbox'
-                    checked={columns.includes(col)}
+                    checked={columns.includes(col)} // Use the columns prop
                     onChange={(e) => handleColumnToggle(col, e.target.checked)}
                     className='mr-2'
                   />

@@ -1,7 +1,12 @@
 /** @format */
 
 import React, { useState } from "react";
-import { FilterIcon, ThreeDots, SortedSvg } from "../../assets/icons/Icons";
+import {
+  FilterIcon,
+  ThreeDots,
+  SortedSvg,
+  PaperClip,
+} from "../../assets/icons/Icons";
 import { columns as initialColumns, data } from "../constant/Constant";
 import FilterModal from "../modal/FilterModal";
 import SortedModal from "../modal/SortedModal";
@@ -12,10 +17,12 @@ const PaginatedTable = () => {
   const [columns, setColumns] = useState([...new Set(initialColumns)]);
   const [showModal, setShowModal] = useState(false);
   const [filterSearch, setFilterSearch] = useState("");
-  const [sortedColumn, setSortedColumn] = useState(null); // Track the sorted column
-  const [sortedData, setSortedData] = useState(data); // Store the sorted data
-  const [modalData, setModalData] = useState([]); // Data to display in modal
-  const [sortOrder, setSortOrder] = useState("asc"); // Track sorting order (asc/desc)
+  const [sortedColumn, setSortedColumn] = useState(null);
+  const [sortedData, setSortedData] = useState(data);
+  const [modalData, setModalData] = useState([]);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showSortedModal, setShowSortedModal] = useState(false);
   const rowsPerPage = 10;
 
   const totalPages = Math.ceil(sortedData.length / rowsPerPage);
@@ -44,15 +51,21 @@ const PaginatedTable = () => {
     }
   };
 
+  // <-------------------- OPEN AND CLOSE MODALS LOGIC -------------------------->
   const handleFilterClick = () => {
-    setShowModal(true);
+    setShowFilterModal(true);
   };
-
+  const openSortModal = (columnName) => {
+    const uniqueValues = [...new Set(data.map((item) => item[columnName]))];
+    setModalData(uniqueValues);
+    setShowSortedModal(true); // Open the sorted modal
+  };
   const closeModal = () => {
-    setShowModal(false);
-    setFilterSearch("");
+    setShowFilterModal(false);
+    setShowSortedModal(false);
   };
 
+  // <-------------------- ADD AND DELETE COLUMN ON CHECKBOX -------------------------->
   const handleColumnToggle = (columnName, checked) => {
     if (checked) {
       setColumns((prev) => [...prev, columnName]);
@@ -61,32 +74,31 @@ const PaginatedTable = () => {
     }
   };
 
-  // Function to handle sorting by column
+  // <--------------------- Function to handle sorting by column ---------------------------->
   const handleSort = (columnName) => {
-    const sortedArray = [...data]
-      .filter((item) => item[columnName]) // Ensure the column has values
-      .sort((a, b) => {
-        const valA = a[columnName]?.toLowerCase() || "";
-        const valB = b[columnName]?.toLowerCase() || "";
-        return sortOrder === "asc"
-          ? valA.localeCompare(valB)
-          : valB.localeCompare(valA);
-      });
+    const sortedArray = [...data].sort((a, b) => {
+      const valA = a[columnName]?.toLowerCase() || ""; // Default to empty string if value is undefined
+      const valB = b[columnName]?.toLowerCase() || "";
 
-    setSortedData(sortedArray);
+      return sortOrder === "asc"
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    });
+
+    // Keep the previously selected rows
+    const filteredSortedData = sortedArray.filter((row) =>
+      selectedRows.includes(row.id)
+    );
+
+    setSortedData(
+      filteredSortedData.length > 0 ? filteredSortedData : sortedArray
+    );
     setSortedColumn(columnName);
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc"); // Toggle sort order
-    setShowModal(false); // Close modal after sorting
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    setShowSortedModal(false); // Close the modal after sorting
   };
 
-  // Function to open the modal with unique column values
-  const openSortModal = (columnName) => {
-    const uniqueValues = [...new Set(data.map((item) => item[columnName]))];
-    setModalData(uniqueValues);
-    setShowModal(true);
-  };
-
-  // Drag and Drop Logic
+  // <-------------------------- FUNCTION FOR DRAG AND DROP --------------------------->
   const handleDragStart = (e, index) => {
     e.dataTransfer.setData("draggedIndex", index);
   };
@@ -107,18 +119,14 @@ const PaginatedTable = () => {
     );
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
   return (
-    <div className='p-4'>
+    <section className='p-4'>
       <div className='h-[400px] overflow-y-auto'>
         <div className='relative overflow-x-auto shadow-md sm:rounded-lg'>
           <table className='w-full border-collapse border rounded-lg border-gray-300 table-fixed'>
             <thead>
               <tr className='bg-blue-700'>
-                <th className='border border-gray-300 px-4 py-2 text-left w-[50px]'>
+                <th className='bg-blue-700 border border-gray-300 px-4 py-2 text-left w-[50px]'>
                   <input
                     type='checkbox'
                     onChange={(e) => handleSelectAll(e.target.checked)}
@@ -127,27 +135,31 @@ const PaginatedTable = () => {
                     )}
                   />
                 </th>
-                <th className='border border-gray-300 px-4 py-2 text-left w-[80px] '>
+                {/* <------------------------- FILTER MODAL ---------------------> */}
+                <th className='left-[50px]  bg-blue-700 border border-gray-300 px-4 py-2 text-left w-[80px]'>
                   <button onClick={handleFilterClick}>
                     <FilterIcon className='w-6 h-6 text-white' />
                   </button>
                   <FilterModal
-                    showModal={showModal}
+                    showModal={showFilterModal}
                     filterSearch={filterSearch}
                     setFilterSearch={setFilterSearch}
                     columns={columns}
                     initialColumns={initialColumns}
-                    handleColumnToggle={handleColumnToggle} // Add this line
+                    handleColumnToggle={handleColumnToggle}
                     closeModal={closeModal}
                   />
                 </th>
+                {/* <------------------------- DRAG AND DROP COLUMNS ------------------------>     */}
                 {columns.map((col, index) => (
                   <th
                     key={index}
                     className='border border-gray-300 px-4 py-2 text-white text-left w-[150px]'
                     draggable
                     onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                    }}
                     onDrop={(e) => handleDrop(e, index)}
                     style={{ cursor: "move" }}>
                     {col}
@@ -167,7 +179,7 @@ const PaginatedTable = () => {
                 <tr
                   key={row.id}
                   className='hover:bg-gray-100'>
-                  <td className='border border-gray-300 px-4 py-2 w-[150px]'>
+                  <td className='left-0 bg-white border border-gray-300 px-4 py-2 w-[150px]'>
                     <input
                       type='checkbox'
                       checked={selectedRows.includes(row.id)}
@@ -176,10 +188,11 @@ const PaginatedTable = () => {
                       }
                     />
                   </td>
-                  <td className='border border-gray-300 px-4 py-2 w-[150px]'>
-                    <button>
-                      <ThreeDots className='w-4 h-4 text-black' />
-                    </button>
+                  <td className='left-[50px] bg-white border border-gray-300 px-4 py-2 w-[150px]'>
+                    <div className='flex'>
+                      <PaperClip className='w-4 h-4 text-blue-700' />
+                      <ThreeDots className='w-4 h-4 text-black ' />
+                    </div>
                   </td>
                   {columns.map((col, colIndex) => (
                     <td
@@ -193,7 +206,7 @@ const PaginatedTable = () => {
                         <span>
                           <input
                             type='text'
-                            className='bg-transparent w-24 outlnie-none focus:outline-none'
+                            className='bg-transparent w-24 outline-none focus:outline-none'
                             value={row[col] || ""}
                             onChange={(e) =>
                               handleInputChange(row.id, col, e.target.value)
@@ -212,6 +225,7 @@ const PaginatedTable = () => {
           </table>
         </div>
       </div>
+      {/* <-----------------------  PAGINATION --------------------------> */}
       <div className='mt-4 flex justify-end space-x-2'>
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -238,16 +252,15 @@ const PaginatedTable = () => {
           Next
         </button>
       </div>
-
-      {/* <SortedModal
-        showModal={showModal}
+      {/* <--------------------------- SORTED MODAL ------------------------> */}
+      <SortedModal
+        showModal={showSortedModal}
         sortedColumn={sortedColumn}
         modalData={modalData}
         handleSort={handleSort}
         closeModal={closeModal}
-      /> */}
-    </div>
+      />
+    </section>
   );
 };
-
 export default PaginatedTable;

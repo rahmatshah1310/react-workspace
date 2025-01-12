@@ -6,6 +6,7 @@ import {
   ThreeDots,
   SortedSvg,
   PaperClip,
+  SelectIcon,
 } from "../../assets/icons/Icons";
 import { columns as initialColumns, data } from "../constant/Constant";
 import FilterModal from "../modal/FilterModal";
@@ -135,10 +136,12 @@ const PaginatedTable = () => {
                     )}
                   />
                 </th>
-                {/* <------------------------- FILTER MODAL ---------------------> */}
-                <th className='left-[50px]  bg-blue-700 border border-gray-300 px-4 py-2 text-left w-[80px]'>
+                {/* Filter Modal Header */}
+                <th className='bg-blue-700 border border-gray-300 px-4 py-2 w-[80px]'>
                   <button onClick={handleFilterClick}>
-                    <FilterIcon className='w-6 h-6 text-white' />
+                    <div className='flex items-center justify-center'>
+                      <FilterIcon className='w-6 h-6 text-white' />
+                    </div>
                   </button>
                   <FilterModal
                     showModal={showFilterModal}
@@ -150,11 +153,11 @@ const PaginatedTable = () => {
                     closeModal={closeModal}
                   />
                 </th>
-                {/* <------------------------- DRAG AND DROP COLUMNS ------------------------>     */}
+                {/* Draggable Headers */}
                 {columns.map((col, index) => (
                   <th
                     key={index}
-                    className='border border-gray-300 px-4 py-2 text-white text-left w-[150px]'
+                    className='border border-gray-300 px-4 py-2 text-white w-[150px]'
                     draggable
                     onDragStart={(e) => handleDragStart(e, index)}
                     onDragOver={(e) => {
@@ -162,14 +165,25 @@ const PaginatedTable = () => {
                     }}
                     onDrop={(e) => handleDrop(e, index)}
                     style={{ cursor: "move" }}>
-                    {col}
-                    {(col === "Station" || col === "Division") && (
-                      <button
-                        onClick={() => openSortModal(col)}
-                        className='ml-8'>
-                        <SortedSvg className='w-4 h-4' />
-                      </button>
-                    )}
+                    <div className='flex items-center justify-between'>
+                      {col}
+                      <div className='flex items-center space-x-2'>
+                        {(col === "Station" ||
+                          col === "Division" ||
+                          col === "Reg No" ||
+                          col === "Full Name" ||
+                          col === "Duty") && (
+                          <SelectIcon className='ml-2 w-4 h-4 text-white cursor-pointer' />
+                        )}
+                        {(col === "Station" || col === "Division") && (
+                          <button
+                            onClick={() => openSortModal(col)}
+                            className='ml-2'>
+                            <SortedSvg className='w-4 h-4' />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </th>
                 ))}
               </tr>

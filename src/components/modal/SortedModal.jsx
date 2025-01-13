@@ -4,69 +4,55 @@ import React, { useState } from "react";
 
 const SortedModal = ({
   showModal,
-  closeModal,
-  handleSort,
   modalData,
-  data,
-  setSortedData,
+  applyFilter,
+  closeModal,
+  clearFilter,
 }) => {
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedValues, setSelectedValues] = useState([]);
 
-  const handleCheckboxChange = (value) => {
-    setSelectedItems(
-      (prevSelected) =>
-        prevSelected.includes(value)
-          ? prevSelected.filter((item) => item !== value) // Deselect
-          : [...prevSelected, value] // Select
+  const handleSelection = (value) => {
+    setSelectedValues(
+      (prev) =>
+        prev.includes(value)
+          ? prev.filter((item) => item !== value) // Deselect value
+          : [...prev, value] // Select value
     );
-  };
-
-  const filterDataBySelected = () => {
-    const filteredData = data.filter(
-      (row) => selectedItems.some((item) => row[columnName] === item) // Filter rows based on selected items
-    );
-    setSortedData(filteredData);
-  };
-
-  const handleSortClick = (columnName) => {
-    handleSort(columnName);
-    filterDataBySelected();
-    setShowModal(false);
   };
 
   return (
-    <div>
-      {showModal && (
-        <div className='fixed inset-0'>
-          <div className='bg-white p-2 rounded shadow-lg w-44 max-h-[200px] overflow-y-auto mx-auto mt-14 align-center'>
-            <ul>
-              {modalData.map((value, index) => (
-                <li
-                  key={index}
-                  className='cursor-pointer hover:bg-gray-200 p-2 flex items-center'
-                  onClick={() => handleSortClick(value)}>
-                  <input
-                    type='checkbox'
-                    className='mr-2'
-                    checked={selectedItems.includes(value)} // Show checkbox as checked if selected
-                    onChange={() => handleCheckboxChange(value)}
-                  />
-                  {value}
-                </li>
-              ))}
-            </ul>
-            <div className='flex justify-between'>
-              <button onClick={closeModal}>RESET</button>
-              <button
-                onClick={closeModal}
-                className='bg-blue-700 text-white p-2 rounded'>
-                OK
-              </button>
-            </div>
+    showModal && (
+      <div className='inset-0 absolute  flex justify-center'>
+        <div className='bg-white p-4 rounded mt-16 ml-56 w-44 h-44 overflow-y-auto'>
+          <ul className='max-h-64 overflow-y-auto mt-4'>
+            {modalData.map((value, index) => (
+              <li
+                key={index}
+                className='flex items-center space-x-2'>
+                <input
+                  type='checkbox'
+                  checked={selectedValues.includes(value)}
+                  onChange={() => handleSelection(value)}
+                />
+                <span>{value}</span>
+              </li>
+            ))}
+          </ul>
+          <div className='flex justify-end space-x-4 mt-4'>
+            <button
+              onClick={() => clearFilter()}
+              className='px-4 py-2 bg-gray-200 rounded'>
+              Reset
+            </button>
+            <button
+              onClick={() => applyFilter(selectedValues)}
+              className='px-4 py-2 bg-blue-500 text-white rounded'>
+              OK
+            </button>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )
   );
 };
 

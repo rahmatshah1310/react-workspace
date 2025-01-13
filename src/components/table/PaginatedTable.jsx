@@ -21,7 +21,6 @@ const PaginatedTable = () => {
   const [sortedColumn, setSortedColumn] = useState(null);
   const [sortedData, setSortedData] = useState(data);
   const [modalData, setModalData] = useState([]);
-  const [sortOrder, setSortOrder] = useState("asc");
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSortedModal, setShowSortedModal] = useState(false);
   const rowsPerPage = 10;
@@ -66,6 +65,30 @@ const PaginatedTable = () => {
     setShowSortedModal(false);
   };
 
+  // <-------------------- OPEN AND CLOSE MODALS LOGIC -------------------------->
+
+  const openFilterModal = (columnName) => {
+    const uniqueValues = [...new Set(data.map((item) => item[columnName]))];
+    setModalData(uniqueValues); // Populate modal with unique values for the column
+    setSortedColumn(columnName); // Set the column being filtered
+    setShowSortedModal(true); // Open the modal
+  };
+
+  const applyFilter = (selectedValues) => {
+    if (sortedColumn) {
+      const filteredData = data.filter((row) =>
+        selectedValues.includes(row[sortedColumn])
+      );
+      setSortedData(filteredData);
+    }
+    closeModal();
+  };
+
+  const clearFilter = () => {
+    setSortedData(data);
+    setSortedColumn(null);
+  };
+
   // <-------------------- ADD AND DELETE COLUMN ON CHECKBOX -------------------------->
   const handleColumnToggle = (columnName, checked) => {
     if (checked) {
@@ -73,30 +96,6 @@ const PaginatedTable = () => {
     } else {
       setColumns((prev) => prev.filter((col) => col !== columnName));
     }
-  };
-
-  // <--------------------- Function to handle sorting by column ---------------------------->
-  const handleSort = (columnName) => {
-    const sortedArray = [...data].sort((a, b) => {
-      const valA = a[columnName]?.toLowerCase() || ""; // Default to empty string if value is undefined
-      const valB = b[columnName]?.toLowerCase() || "";
-
-      return sortOrder === "asc"
-        ? valA.localeCompare(valB)
-        : valB.localeCompare(valA);
-    });
-
-    // Keep the previously selected rows
-    const filteredSortedData = sortedArray.filter((row) =>
-      selectedRows.includes(row.id)
-    );
-
-    setSortedData(
-      filteredSortedData.length > 0 ? filteredSortedData : sortedArray
-    );
-    setSortedColumn(columnName);
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    setShowSortedModal(false); // Close the modal after sorting
   };
 
   // <-------------------------- FUNCTION FOR DRAG AND DROP --------------------------->
@@ -177,8 +176,8 @@ const PaginatedTable = () => {
                         )}
                         {(col === "Station" || col === "Division") && (
                           <button
-                            onClick={() => openSortModal(col)}
-                            className='ml-2'>
+                            onClick={() => openFilterModal(col)}
+                            className='ml-2 relative'>
                             <SortedSvg className='w-4 h-4' />
                           </button>
                         )}
@@ -188,6 +187,7 @@ const PaginatedTable = () => {
                 ))}
               </tr>
             </thead>
+
             <tbody>
               {currentRows.map((row) => (
                 <tr
@@ -269,9 +269,9 @@ const PaginatedTable = () => {
       {/* <--------------------------- SORTED MODAL ------------------------> */}
       <SortedModal
         showModal={showSortedModal}
-        sortedColumn={sortedColumn}
         modalData={modalData}
-        handleSort={handleSort}
+        applyFilter={applyFilter}
+        clearFilter={clearFilter}
         closeModal={closeModal}
       />
     </section>

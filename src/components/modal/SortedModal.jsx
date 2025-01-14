@@ -12,36 +12,41 @@ const SortedModal = ({
   const [selectedValues, setSelectedValues] = useState([]);
 
   const handleSelection = (value) => {
-    setSelectedValues(
-      (prev) =>
-        prev.includes(value)
-          ? prev.filter((item) => item !== value) // Deselect value
-          : [...prev, value] // Select value
-    );
+    setSelectedValues((prev) => {
+      if (prev.includes(value)) {
+        if (prev.length === 1) {
+          return prev;
+        }
+        return prev.filter((item) => item !== value);
+      } else {
+        return [...prev, value];
+      }
+    });
   };
+
+  console.log(selectedValues);
 
   if (!showModal) return null; // Don't render anything if the modal is not shown
 
   return (
     <div
       className='inset-0 absolute flex justify-center items-start'
-      onClick={closeModal} // Close the modal when clicking outside
-    >
+      onClick={closeModal}>
       <div
         className='bg-white p-4 rounded mt-14 w-44 h-44 overflow-y-auto'
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-      >
+        onClick={(e) => e.stopPropagation()}>
         <ul className='max-h-64 overflow-y-auto mt-4'>
-          {modalData.map((value, index) => (
+          {modalData.map((value, id) => (
             <li
-              key={index}
+              key={id}
               className='flex items-center space-x-2'>
               <input
+                id={id}
                 type='checkbox'
                 checked={selectedValues.includes(value)}
                 onChange={() => handleSelection(value)}
               />
-              <span>{value}</span>
+              <label htmlFor={id}>{value}</label>
             </li>
           ))}
         </ul>

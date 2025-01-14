@@ -33,6 +33,17 @@ const PaginatedTable = () => {
     currentPage * rowsPerPage
   );
 
+  // <--------------------- Sorting logic ------------------------>
+  const handleSort = (columnName) => {
+    const sorted = [...sortedData].sort((a, b) => {
+      if (a[columnName] < b[columnName]) return -1;
+      if (a[columnName] > b[columnName]) return 1;
+      return 0;
+    });
+    setSortedColumn(columnName);
+    setSortedData(sorted);
+  };
+
   // <-------------------- OPEN AND CLOSE MODALS LOGIC -------------------------->
   const handleFilterClick = () => {
     setShowFilterModal(true);
@@ -48,7 +59,6 @@ const PaginatedTable = () => {
   };
 
   // <-------------------- OPEN AND CLOSE MODALS FILTER LOGIC -------------------------->
-
   const openFilterModal = (columnName) => {
     const uniqueValues = [...new Set(data.map((item) => item[columnName]))];
     setModalData(uniqueValues);
@@ -135,7 +145,7 @@ const PaginatedTable = () => {
                   />
                 </th>
 
-                {/* Draggable Headers */}
+                {/* <-------------------------- Draggable Headers ------------------------>  */}
                 {columns.map((col, index) => (
                   <th
                     key={index}
@@ -146,9 +156,9 @@ const PaginatedTable = () => {
                     onDrop={(e) => handleDrop(e, index)}
                     style={{ cursor: "move" }}>
                     <div className='flex items-center justify-between'>
-                      {col}
+                      <span onClick={() => handleSort(col)}> {col}</span>
                       <div className='flex items-center space-x-2'>
-                        {/* Logic for SelectIcon */}
+                        {/* <---------------- Logic for SelectIcon -------------------> */}
                         {(col === "Station" ||
                           col === "Division" ||
                           col === "Reg No" ||

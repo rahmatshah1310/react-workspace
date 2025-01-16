@@ -17,17 +17,18 @@ const FilterModal = ({
   };
 
   const handleModalClick = (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent closing the modal when clicking inside
   };
 
   return (
     showModal && (
       <div
-        className='modal-overlay fixed inset-0 '
+        className='inset-0 model-overlay absolute '
         onClick={closeModal}>
         <div
-          className='bg-white p-2 rounded shadow-lg w-56 max-h-[200px] overflow-y-auto mt-16 ml-16'
-          onClick={handleModalClick}>
+          className='bg-white p-2 rounded shadow-lg w-56 h-44 overflow-y-auto absolute top-[13%] left-[5%] z-100'
+          onClick={handleModalClick} // Attach the handler here
+        >
           <div className='relative'>
             <input
               type='text'

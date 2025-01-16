@@ -13,6 +13,7 @@ import {
 import { columns as initialColumns, data } from "../constant/Constant";
 import FilterModal from "../modal/FilterModal";
 import SortedModal from "../modal/SortedModal";
+import DeleteModal from "../modal/DeleteModal";
 
 const PaginatedTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,6 +26,7 @@ const PaginatedTable = () => {
   const [modalData, setModalData] = useState([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSortedModal, setShowSortedModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const rowsPerPage = 10;
 
   const totalPages = Math.ceil(sortedData.length / rowsPerPage);
@@ -48,10 +50,10 @@ const PaginatedTable = () => {
   const handleFilterClick = () => {
     setShowFilterModal(true);
   };
-  const openSortModal = (columnName) => {
+  const openSortModal = (columnName, index) => {
     const uniqueValues = [...new Set(data.map((item) => item[columnName]))];
     setModalData(uniqueValues);
-    setShowSortedModal(true); // Open the sorted modal
+    setShowSortedModal(showSortedModal === index ? null : index); // Open the sorted modal
   };
   const closeModal = () => {
     setShowFilterModal(false);
@@ -83,8 +85,12 @@ const PaginatedTable = () => {
 
   // <-------------------- ADD AND DELETE COLUMN ON CHECKBOX -------------------------->
   const handleColumnToggle = (columnName, checked) => {
+    const columnIndex = initialColumns.indexOf(columnName);
+
     if (checked) {
-      setColumns((prev) => [...prev, columnName]);
+      const updatedColumns = [...columns];
+      updatedColumns.splice(columnIndex, 0, columnName);
+      setColumns(updatedColumns);
     } else {
       setColumns((prev) => prev.filter((col) => col !== columnName));
     }
@@ -110,15 +116,41 @@ const PaginatedTable = () => {
       )
     );
   };
+  // <--------------------- For Selecting all checkbox on One ------------------------->
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const allCurrentRowIds = currentRows.map((row) => row.id);
+      setSelectedRows([...new Set([...selectedRows, ...allCurrentRowIds])]);
+    } else {
+      const remainingRows = selectedRows.filter(
+        (id) => !currentRows.map((row) => row.id).includes(id)
+      );
+      setSelectedRows(remainingRows);
+    }
+  };
+  // <--------------------- For Selecting all checkbox individually ------------------------->
+  const handleRowSelection = (id, checked) => {
+    if (checked) {
+      setSelectedRows((prev) => [...prev, id]);
+    } else {
+      setSelectedRows((prev) => prev.filter((rowId) => rowId !== id));
+    }
+  };
+  const handleOpenDeleteModal = () => {
+    setOpenDeleteModal(true); // Set the index of the icon
+  };
 
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false); // Close the modal
+  };
   return (
-    <section className='p-4'>
-      <div className='h-[400px] overflow-y-auto'>
-        <div className='relative overflow-x-auto shadow-md sm:rounded-lg'>
+    <section className='p-4 '>
+      <div className=' overflow-y-auto'>
+        <div className='relative  shadow-md sm:rounded-lg'>
           <table className='w-full border-collapse border rounded-lg border-gray-300 table-fixed'>
-            <thead>
+            <thead className='overflow-x-hidden'>
               <tr className='bg-blue-700'>
-                <th className='bg-blue-700 border border-gray-300 px-4 py-2 text-left w-[50px] sticky left-0 z-10'>
+                <th className='bg-blue-700 border border-gray-300 px-4 py-2 text-left w-[50px] sticky left-0 '>
                   <input
                     type='checkbox'
                     onChange={(e) => handleSelectAll(e.target.checked)}
@@ -128,21 +160,10 @@ const PaginatedTable = () => {
                   />
                 </th>
 
-                <th className='bg-blue-700 border border-gray-300 px-4 py-2 w-[80px] sticky left-[50px] z-10'>
+                <th className='bg-blue-700 border border-gray-300 px-4 py-2 w-[80px] sticky left-[50px] '>
                   <button onClick={handleFilterClick}>
-                    <div className='flex items-center justify-center'>
-                      <FilterIcon className='w-6 h-6 text-white' />
-                    </div>
+                    <FilterIcon className='w-6 h-6 text-white relative' />
                   </button>
-                  <FilterModal
-                    showModal={showFilterModal}
-                    filterSearch={filterSearch}
-                    setFilterSearch={setFilterSearch}
-                    columns={columns}
-                    initialColumns={initialColumns}
-                    handleColumnToggle={handleColumnToggle}
-                    closeModal={closeModal}
-                  />
                 </th>
 
                 {/* <-------------------------- Draggable Headers ------------------------>  */}
@@ -168,11 +189,18 @@ const PaginatedTable = () => {
                         )}
 
                         {/* <------------------------- Logic for Filter and Sort Icons ---------------------> */}
-                        {(col === "Station" || col === "Division") && (
+                        {col === "Station" && (
                           <button
-                            onClick={() => openFilterModal(col)}
-                            className='ml-2 relative'>
-                            <SortedSvg className='w-4 h-4' />
+                            onClick={() => openFilterModal(col, index)}
+                            className='ml-2'>
+                            <SortedSvg className='w-4 h-4 relative' />
+                          </button>
+                        )}
+                        {col === "Division" && (
+                          <button
+                            onClick={() => handleSort(col)}
+                            className='ml-2'>
+                            <SortedSvg className='w-4 h-4 relative' />
                           </button>
                         )}
                       </div>
@@ -182,11 +210,9 @@ const PaginatedTable = () => {
               </tr>
             </thead>
             <tbody>
-              {currentRows.map((row) => (
-                <tr
-                  key={row.id}
-                  className='hover:bg-gray-100'>
-                  <td className='left-0 bg-white border border-gray-300 px-4 py-2 w-[50px] sticky z-1'>
+              {currentRows.map((row, id) => (
+                <tr key={row.id}>
+                  <td className='left-0 bg-gray-100 border border-gray-300 px-4 py-2 w-[50px] sticky z-1'>
                     <input
                       type='checkbox'
                       checked={selectedRows.includes(row.id)}
@@ -196,10 +222,13 @@ const PaginatedTable = () => {
                     />
                   </td>
 
-                  <td className='left-[50px] bg-white border border-gray-300 px-4 py-2 w-[80px] sticky z-1'>
+                  <td className='left-[50px] bg-gray-100 border border-gray-300 px-4 py-2 w-[80px] sticky z-1'>
                     <div className='flex'>
                       <PaperClip className='w-4 h-4 text-blue-700' />
-                      <ThreeDots className='w-4 h-4 text-black ' />
+                      <ThreeDots
+                        className='w-4 h-4 cursor-pointer text-gray-500'
+                        onClick={() => handleOpenDeleteModal(id)}
+                      />
                     </div>
                   </td>
 
@@ -236,19 +265,17 @@ const PaginatedTable = () => {
       </div>
       {/* <-----------------------  PAGINATION --------------------------> */}
       <div className='mt-4 flex justify-end space-x-2'>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          className='px-4 py-2 bg-gray-200 rounded'>
-          <LessThan />
+        <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>
+          <LessThan className='w-4 h-4 font-bold' />
         </button>
         {Array.from({ length: totalPages }, (_, index) => (
           <button
             key={index}
             onClick={() => setCurrentPage(index + 1)}
-            className={`px-4 py-2 rounded ${
+            className={`px-2 rounded ${
               currentPage === index + 1
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200"
+                ? "border border-blue-500 text-gray-600"
+                : "border border-blue-500"
             }`}>
             {index + 1}
           </button>
@@ -256,9 +283,8 @@ const PaginatedTable = () => {
         <button
           onClick={() =>
             setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          className='px-4 py-2 bg-gray-200 rounded'>
-          <GreaterThan />
+          }>
+          <GreaterThan className='w-4 h-4 font-bold' />
         </button>
       </div>
       {/* <--------------------------- SORTED MODAL ------------------------> */}
@@ -268,6 +294,20 @@ const PaginatedTable = () => {
         applyFilter={applyFilter}
         clearFilter={clearFilter}
         closeModal={closeModal}
+      />
+      <FilterModal
+        showModal={showFilterModal}
+        filterSearch={filterSearch}
+        setFilterSearch={setFilterSearch}
+        columns={columns}
+        initialColumns={initialColumns}
+        handleColumnToggle={handleColumnToggle}
+        closeModal={closeModal}
+        placement='bottom'
+      />
+      <DeleteModal
+        isOpen={openDeleteModal}
+        handleClose={handleCloseDeleteModal}
       />
     </section>
   );

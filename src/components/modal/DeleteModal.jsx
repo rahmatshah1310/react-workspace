@@ -31,7 +31,7 @@ const DeleteModal = ({ isOpen, handleClose }) => {
   return (
     isOpen && (
       <div
-        className='modal-overlay fixed inset-0 '
+        className='modal-overlay absolute inset-0 '
         onClick={handleClose}>
         <div
           className='bg-white p-4 rounded shadow-lg w-56 max-h-60 mt-24 ml-24 overflow-y-auto '

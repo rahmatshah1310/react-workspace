@@ -226,7 +226,7 @@ const PaginatedTable = () => {
                     <div className='flex'>
                       <PaperClip className='w-4 h-4 text-blue-700' />
                       <ThreeDots
-                        className='w-4 h-4 cursor-pointer text-gray-500'
+                        className='w-4 h-4 cursor-pointer text-gray-500 relative'
                         onClick={() => handleOpenDeleteModal(id)}
                       />
                     </div>
